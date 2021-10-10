@@ -15,22 +15,18 @@ class CoreController:
         self.bluetooth_radio.write_bytes(action_packet)
 
         # Wait for response
-
         response_bytes : bytearray = self.bluetooth_radio.read_bytes(ResponsePacket.PACKET_SIZE)
         response = ResponsePacket.get_packet_values(response_bytes)
 
         if (response == Response.REQUEST_ACCEPT):
-            # The request has been accepted
-            # Send user data
+            # The request has been accepted, send user data
             self.bluetooth_radio.write_bytes(user_data)
-            pass
-
         if (response == Response.REQUEST_DENIED):
             # The request has been denied
             print("Bad")
         elif (response == Response.CONN_TERMINATED):
             # The connection has been terminated
-            pass
+            print("Bad")
 
     def send_edit_user_request(self):
         pass
@@ -39,34 +35,40 @@ class CoreController:
 
     def send_add_preset_request(self, preset_data : bytearray):
         # Inform the HC-05 that a timeblock is being added
+        action_packet : ActionPacket = ActionPacket.create_packet(Action.ADD)
+        self.bluetooth_radio.write_bytes(action_packet)
+
+        # Wait for response
+        response_bytes : bytearray = self.bluetooth_radio.read_bytes(ResponsePacket.PACKET_SIZE)
+        response = ResponsePacket.get_packet_values(response_bytes)
 
         # Send the timeblock information
-
-        # Wait for confirmation
-        pass
+        if (response == Response.REQUEST_ACCEPT):
+            # The request has been accepted, send user data
+            self.bluetooth_radio.write_bytes(preset_data)
+        if (response == Response.REQUEST_DENIED):
+            # The request has been denied
+            print("Bad")
+        elif (response == Response.CONN_TERMINATED):
+            # The connection has been terminated
+            print("Bad")
 
     def send_edit_preset_request(self):
         # Inform the HC-05 that a timeblock is being edited
 
         # Send the id of the timeblock that was edited and new timeblock information
-
-        # Wait for confirmation
         pass
 
     def send_remove_preset_request(self):
         # Inform the HC-05 that a timeblock is being removed
 
         # Send the timeblock id for the Arduino to remove
-
-        # Wait for confirmation
         pass
 
     def send_get_preset_request(self, preset_id : int):
         # Inform the HC-05 that we want a specific preset
 
         # Receive the preset
-
-        # Wait for confirmation
         pass
 
     def send_get_presets_request(self):

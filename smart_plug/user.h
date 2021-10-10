@@ -15,7 +15,7 @@ extern "C" {
 
 #define MAX_PRESETS 16 // The max number of presets, this is safely less than the maximum that could be stored before EEPROM memory limit
 
-#define USER_EEPROM_ADDRESS 0 // The address at which the user is stored
+#define USER_SIZE 1 // The bytes required to store the user (excluding presets) in EEPROM
 
 typedef struct {
     TemperatureRep_t temp_rep;

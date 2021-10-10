@@ -30,4 +30,4 @@ class UserManager:
 
 
     def edit_user(self):
-        pass
+        print("Not implemented")

@@ -61,10 +61,7 @@ class PresetManager:
         self.core_controller.send_add_preset_request(preset_data)
     
     def edit_preset(self):
-        preset_id : int = None
-        # Get the preset
-        preset : Preset = self.preset_manager.get_preset(preset_id)
-        # Update the edited preset
+        print("Not implemented")
 
     def remove_preset(self, presed_id : int):
         pass
