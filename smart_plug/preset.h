@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#define PRESET_BYTE_SIZE 6
+#define PRESET_SERIALISED_SIZE 5
 
 typedef struct {
     uint8_t hour;

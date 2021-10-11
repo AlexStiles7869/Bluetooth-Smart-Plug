@@ -2,6 +2,7 @@ from Controllers.HC05Controller import HC05_Controller
 
 from Packets.ActionPacket import ActionPacket, Action
 from Packets.ResponsePacket import Response, ResponsePacket
+from Packets.UserDataPacket import UserDataPacket
 
 class CoreController:
     def __init__(self, bluetooth_radio : HC05_Controller):
@@ -27,6 +28,9 @@ class CoreController:
         elif (response == Response.CONN_TERMINATED):
             # The connection has been terminated
             print("Bad")
+
+    def receive_user_data(self) -> bytearray:
+        return self.bluetooth_radio.read_bytes(UserDataPacket.PACKET_SIZE)
 
     def send_edit_user_request(self):
         pass
@@ -73,9 +77,7 @@ class CoreController:
 
     def send_get_presets_request(self):
         # Inform the HC-05 that we want all the presets
-
-        self.bluetooth_radio.write_bytes(int(9).to_bytes(1, "big"))
-
+        
         # Receive the presets
         presets : bytearray = bytearray() 
 

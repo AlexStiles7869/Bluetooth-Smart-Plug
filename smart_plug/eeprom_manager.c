@@ -1,8 +1,15 @@
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "eeprom_manager.h"
 
+/**
+ * @brief Initialise the program with the information stored in EEPROM
+ * 
+ * @param eeprom_manager 
+ */
 void eeprom_manager_init(EEPROM_Manager_t* eeprom_manager)
 {
     // The user set flag is stored at EEPROM_USER_SET_ADDR
@@ -14,51 +21,54 @@ void eeprom_manager_init(EEPROM_Manager_t* eeprom_manager)
     eeprom_manager->num_presets = num_presets;
 }
 
-void store_user(EEPROM_Manager_t* eeprom_manager, User_t* user)
+/* User Storing and Retrieval */
+
+void store_user(EEPROM_Manager_t* eeprom_manager, uint8_t* user_data_buf)
 {
-    /*
-    This process should be more abstracted by having a serialise function for the user,
-    but this will have to do for now. There's a lot left to do.
-    */
     eeprom_manager->write_eeprom(EEPROM_USER_SET_ADDR, true);
-    eeprom_manager->write_eeprom(EEPROM_USER_ADDR, user->user_prefs.temp_rep);
+    eeprom_manager->write_eeprom(EEPROM_USER_ADDR, user_data_buf[0]);
 }
 
-void store_preset(EEPROM_Manager_t* eeprom_manager, Preset_t* preset)
+void retrieve_user(EEPROM_Manager_t* eeprom_manager, uint8_t* user_data_buf)
 {
-    // Write the preset to the EEPROM
-    write_preset_eeprom(*preset);
+    bool temp_rep = eeprom_manager->read_eeprom(EEPROM_USER_ADDR);
+    user_data_buf[0] = temp_rep;
+}
 
-    // Increment the number of presets
+/* Preset Storing and Retrieval */
+
+void store_preset(EEPROM_Manager_t* eeprom_manager, uint8_t* preset_data_buf)
+{
+    // Write the preset to EEPROM
+    for (uint8_t i = 0; i < PRESET_SERIALISED_SIZE; i++) {
+        uint8_t preset_id = eeprom_manager->num_presets;
+        eeprom_manager->write_eeprom(EEPROM_PRESET_START_ADDR + (PRESET_SERIALISED_SIZE * preset_id) + i, preset_data_buf[i]);
+    }
+
+    // Update the number of presets
     eeprom_manager->num_presets++;
 
-    // Write the updated preset amount to the EEPROM
+    // Write the updated number of presets to EEPROM
     eeprom_manager->write_eeprom(EEPROM_PRESET_NUM_ADDR, eeprom_manager->num_presets);
 }
 
-User_t get_user(EEPROM_Manager_t* eeprom_manager)
+void retrieve_preset(EEPROM_Manager_t* eeprom_manager, uint8_t* preset_data_buf, uint8_t preset_id)
 {
-    /*
-    Again, user.c should have a function to create a user from the serialised data
-    but I'm doing it here to move along faster.
-    */
-    bool temp_rep = eeprom_manager->read_eeprom(EEPROM_USER_ADDR);
-    User_t user = {.user_prefs = {.temp_rep = temp_rep}};
-
-    return user;
+    // Read in single preset
+    for (uint8_t i = 0; i < PRESET_SERIALISED_SIZE; i++) {
+        preset_data_buf[i] = eeprom_manager->read_eeprom(EEPROM_PRESET_START_ADDR + (PRESET_SERIALISED_SIZE * preset_id) + i);
+    }
 }
 
-Preset_t get_preset(uint8_t preset_id)
+void retrieve_presets(EEPROM_Manager_t* eeprom_manager, uint8_t* presets_data_buf)
 {
-    // Read the preset from EEPROM
-    Preset_t preset = read_preset_eeprom(preset_id);
-
-    return preset;
-}
-
-uint8_t get_presets(EEPROM_Manager_t* eeprom_manager, Preset_t* preset_container)
-{
-    for (uint8_t i = 0; i < eeprom_manager->num_presets; i++) {
-        preset_container[i] = get_preset(i);
+    // Read and deserialise all the presets from the EEPROM and add them to the user
+    for (size_t i = 0; i < eeprom_manager->num_presets; i++) {
+        // Create buffer for single preset
+        uint8_t preset_data_buf[PRESET_SERIALISED_SIZE];
+        // Get the preset from EEPROM
+        retrieve_preset(eeprom_manager, preset_data_buf, i);
+        // Add to the all presets buffer
+        memcpy(presets_data_buf + (i * PRESET_SERIALISED_SIZE), preset_data_buf, PRESET_SERIALISED_SIZE);
     }
 }

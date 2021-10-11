@@ -16,7 +16,7 @@ typedef struct {
     uint8_t setup;
 } Conn_Conf_Pack_t;
 
-void create_conn_conf_packet(Conn_Conf_Pack_t* packet, uint8_t* packet_buf);
+void create_connection_packet(Conn_Conf_Pack_t* packet, uint8_t* packet_buf);
 
 #if defined(__cplusplus)
 }

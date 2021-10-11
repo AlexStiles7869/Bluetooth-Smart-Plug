@@ -3,14 +3,11 @@ from Types.Timeblock import TimeBlock, Time
 from Types.Temperature import Temperature, TemperatureRepresentation
 
 class Preset:
-    PRESET_BYTE_SIZE = 6 # Number of bytes in a preset
+    PRESET_BYTE_SIZE = 5 # Number of bytes in a preset
     ID = 0 # ID of the preset
 
     def __init__(self, time_block : TimeBlock, temperature : Temperature, user_prefs : UserPrefs = UserPrefs()):
         self.user_prefs = user_prefs # This is not serialised
-
-        self.id = Preset.ID
-        Preset.ID += 1 # Increment the ID
 
         self.time_block : TimeBlock = time_block
         self.temperature : Temperature = temperature
@@ -27,9 +24,8 @@ class Preset:
     def serialise(self) -> bytearray:
         serialised_data : bytearray = bytearray(Preset.PRESET_BYTE_SIZE)
 
-        serialised_data[0] = self.id
-        serialised_data[1 : 5] = self.time_block.serialise()
-        serialised_data[5] = self.temperature.serialise()
+        serialised_data[0 : 4] = self.time_block.serialise()
+        serialised_data[4] = self.temperature.serialise()
 
         return serialised_data
 

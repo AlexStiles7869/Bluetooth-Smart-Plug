@@ -9,15 +9,19 @@
 // C Libraries
 #include <stdint.h>
 
-// My Headers
+// 
+#include "core_controller.h"
 #include "connection.h"
-#include "manager.h"
+
+// Managers
+#include "eeprom_manager.h"
 #include "user_manager.h"
+
+// Types
 #include "preset.h"
 
 // #include "button.h"
 #include "display.h"
-#include "eeprom_manager.h"
 
 /* Definitions */
 
@@ -44,11 +48,16 @@ User_t user;
 
 uint8_t read_eeprom(size_t addr)
 {
+    Serial.println(addr);
     return EEPROM.read(addr);
 }
 
 void write_eeprom(size_t addr, uint8_t value)
 {
+    Serial.print(addr);
+    Serial.print(" | ");
+    Serial.print(value);
+    Serial.println();
     EEPROM.write(addr, value);
 }
 
@@ -59,25 +68,25 @@ void delete_eeprom(size_t addr)
 
 // Other EEPROM functions
 
-Preset_t read_preset_eeprom(uint8_t preset_id)
-{
-    Preset_t preset;
+// Preset_t read_preset_eeprom(uint8_t preset_id)
+// {
+//     Preset_t preset;
 
-    /*
-    I'm not passing a Preset_t pointer to EEPROM.get() because there is apparently some strange C++ syntax for passing 'by reference' which
-    is different to passing a 'reference' (a pointer address). This caused me a large headache so I'm going to accept it and move on.
-    Read more here: https://community.particle.io/t/pass-pointer-to-eeprom-get-put/57123/6
-    */
+//     /*
+//     I'm not passing a Preset_t pointer to EEPROM.get() because there is apparently some strange C++ syntax for passing 'by reference' which
+//     is different to passing a 'reference' (a pointer address). This caused me a large headache so I'm going to accept it and move on.
+//     Read more here: https://community.particle.io/t/pass-pointer-to-eeprom-get-put/57123/6
+//     */
 
-    EEPROM.get(EEPROM_PRESET_START_ADDR + (PRESET_BYTE_SIZE * preset_id), preset);
+//     EEPROM.get(EEPROM_PRESET_START_ADDR + (PRESET_SERIALISED_SIZE * preset_id), preset);
 
-    return preset
-}
+//     return preset;
+// }
 
-void write_preset_eeprom(Preset_t preset)
-{
-    EEPROM.put(EEPROM_PRESET_START_ADDR + (PRESET_BYTE_SIZE * preset.id), preset);
-}
+// void write_preset_eeprom(Preset_t preset)
+// {
+//     EEPROM.put(EEPROM_PRESET_START_ADDR + (PRESET_SERIALISED_SIZE * preset.id), preset);
+// }
 
 
 /* Serial Reading / Writing */
@@ -188,9 +197,6 @@ EEPROM_Manager_t eeprom_manager = {
 
 void setup()
 {
-    // for (int i = 0; i < 512; i++) {
-    //     EEPROM.write(i, 0);
-    // }
     // Start USB serial
     Serial.begin(9600);
 
@@ -198,6 +204,10 @@ void setup()
     HC05.begin(9600);
     // Set timeout to an hour
     HC05.setTimeout(60 * 60 * 1000);
+
+    for (int i = 0; i < 10; i++) {
+        Serial.println(EEPROM.read(i));
+    }
 
     // Inititalise display
     tft.initR(INITR_BLACKTAB);
@@ -210,16 +220,16 @@ void setup()
     // Initialise the EEPROM manager
     eeprom_manager_init(&eeprom_manager);
 
-    // Read in data from EEPROM relating to user prefs (or if setup needed) and current presets
-    user.user_setup = eeprom_manager.user_setup;
-
-    if (user.user_setup) {
-        // Read all the presets and provide to user
-        get_presets(&eeprom_manager, user.presets);
+    if (eeprom_manager.user_setup) {
+        // Recreate the user from EEPROM data
+        setup_saved_user(&user, &eeprom_manager);
 
         if (eeprom_manager.num_presets == 0) {
           change_page(&display, NO_PRESETS);
           update_display(&display);
+        } else {
+            display_preset(&display, &user, &(user.presets[0]), false);
+            update_display(&display);
         }
     } else {
         // Display that setup needs to be completed
@@ -241,22 +251,24 @@ void loop()
     if (HC05.available() > 0) {
         // Check if connection has been established with computer
         if (!connection.currently_connected) {
-            // Send appropriate response depending on valid magic number, general errors, and setup state
-            connection_attempt_response(&connection, &user);
+            // Attempt to establish a connection
+            establish_connection(&connection, &user);
 
-            if (!user.user_setup) {
-                // Create user based on computer data
-                create_user(&connection, &user);
-                
-                // Store the newly created user in the EEPROM
-                store_user(&eeprom_manager, &user);
+            if (connection.currently_connected) {
+                if (user.user_setup) {
+                    // Send the user data to the computer
+                    send_user_data(&connection, &user);
+                } else {
+                    // Create user based on computer data
+                    setup_new_user(&connection, &user, &eeprom_manager);
 
-                // Change the page to no presets
-                change_page(&display, NO_PRESETS);
+                    // Change the page to no presets
+                    change_page(&display, NO_PRESETS);
+                }
             }
         } else {
             // Everything is connected and setup, handle commands from computer
-            handle_action(&connection, &user, &eeprom_manager);
+            receive_action(&connection, &user, &eeprom_manager);
         }
     }
 

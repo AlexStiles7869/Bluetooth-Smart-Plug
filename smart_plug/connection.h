@@ -11,13 +11,15 @@ extern "C" {
 
 #include "user.h"
 
+#define CONN_MAGIC_NUM 100
+
 typedef struct {
     bool currently_connected;
     uint8_t (*read_bytes_func)(uint8_t* buf, size_t size);
     size_t (*write_bytes_func)(uint8_t* buf, size_t size);
 } Connection_t;
 
-void connection_attempt_response(Connection_t* connection, User_t* user);
+void establish_connection(Connection_t* connection, User_t* user);
 
 #if defined(__cplusplus)
 }

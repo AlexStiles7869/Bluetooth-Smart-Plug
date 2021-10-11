@@ -28,6 +28,13 @@ class UserManager:
         # Send to the Arduino
         self.core_controller.send_add_user_request(user_data)
 
+    def retrieve_user(self):
+        user_data : bytearray = self.core_controller.receive_user_data()
+        
+        temp_pref : int = user_data[0]
+        user : User = User(UserPrefs(temp_pref))
+
+        self.user = user
 
     def edit_user(self):
         print("Not implemented")

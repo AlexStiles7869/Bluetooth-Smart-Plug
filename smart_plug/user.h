@@ -11,7 +11,7 @@ extern "C" {
 #include "temperature.h"
 #include "preset.h"
 
-#define USER_PACKET_SIZE 1 // The size of the user's packet data (only the preferences)
+#define USER_SERIALISED_SIZE 1 // The size of the user's packet data (only the preferences)
 
 #define MAX_PRESETS 16 // The max number of presets, this is safely less than the maximum that could be stored before EEPROM memory limit
 
@@ -26,8 +26,6 @@ typedef struct {
     UserPrefs_t user_prefs;
     Preset_t presets[MAX_PRESETS];
 } User_t;
-
-void setup_user(User_t* user, uint8_t* user_data_buf);
 
 #if defined(__cplusplus)
 }

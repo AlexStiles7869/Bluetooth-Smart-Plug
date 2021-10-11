@@ -26,11 +26,11 @@ typedef struct EEPROM_Manager_s {
 } EEPROM_Manager_t;
 
 void eeprom_manager_init(EEPROM_Manager_t* eeprom_manager); // Reads the current EEPROM and determines if the user has been set and what presets there are
-void store_user(EEPROM_Manager_t* eeprom_manager, User_t* user); // Stores the user (excluding presets)
-void store_preset(EEPROM_Manager_t* eeprom_manager, Preset_t* preset); // Stores a preset
-User_t get_user(EEPROM_Manager_t* eeprom_manager); // Gets the user (excluding presets)
-Preset_t get_preset(uint8_t preset_id); 
-uint8_t get_presets(EEPROM_Manager_t* eeprom_manager, Preset_t* preset_container); // Returns the number of presets
+void store_user(EEPROM_Manager_t* eeprom_manager, uint8_t* user_data_buf); // Stores the user (excluding presets)
+void retrieve_user(EEPROM_Manager_t* eeprom_manager, uint8_t* user_data_buf);
+void store_preset(EEPROM_Manager_t* eeprom_manager, uint8_t* preset_data_buf);
+void retrieve_preset(EEPROM_Manager_t* eeprom_manager, uint8_t* preset_data_buf, uint8_t preset_id);
+void retrieve_presets(EEPROM_Manager_t* eeprom_manager, uint8_t* presets_data_buf);
 
 /* Editing functionality has been not been implemented, not enough time */
 

@@ -37,6 +37,9 @@ class CoreManager:
 
         if setup:
             self.setup()
+        else:
+            # Get the user data from the Arduino
+            self.user_manager.retrieve_user()
 
     def establish_connection(self) -> Tuple[int, int, int]:
         # Establish link with bluetooth radio

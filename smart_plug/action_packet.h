@@ -24,7 +24,7 @@ typedef struct {
     Action_t action;
 } Action_Pack_t;
 
-Action_Pack_t receive_action(Connection_t* connection);
+Action_Pack_t receive_action_packet(Connection_t* connection);
 
 #if defined(__cplusplus)
 }

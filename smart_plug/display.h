@@ -5,10 +5,14 @@
 extern "C" {
 #endif
 
+#include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
 
-#define LED_COLUMNS 16 + 1 // Number of columns that the LCD display has
+#include "user.h"
+#include "preset.h"
+
+#define LED_COLUMNS 32 + 1 // Number of columns that the LCD display has
 
 #define MAX_ACTIVE_TIME 5000 // Number of the milliseconds that the display should be on for
 
@@ -49,6 +53,7 @@ struct Display_s {
 
 };
 
+void display_preset(Display_t* display, User_t* user, Preset_t* preset, bool current);
 void change_page(Display_t* display, PageName_t page_name);
 void change_content(Display_t* display, char** lines);
 void poll_display_timeout(Display_t* display, long unsigned time_on);
